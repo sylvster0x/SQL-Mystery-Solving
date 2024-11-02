@@ -1,0 +1,63 @@
+/* Since the individual scripts are fairly simple, 
+I will only present those that lead to the partial 
+and final solution of the mystery. */
+
+/* After running this script (below), we acknowledge 
+that the murderer’s name is 'Jeremy Bowers'. */
+
+select 
+   gfnm.name                    as Name
+   ,gfnm.person_id              as ID_num
+   ,gfnci.membership_id         as Memb_id
+   ,gfnm.membership_start_date  as Memb_start
+   ,gfnm.membership_status      as Memb_status
+   ,gfnci.check_in_date         as Check_in_date
+   ,p1.license_id as License 
+from get_fit_now_member gfnm
+join get_fit_now_check_in gfnci on gfnm.id = gfnci.membership_id
+join person p1                  on p1.name = gfnm.name
+join drivers_license dl         on p1.license_id = dl.id
+where gfnm.id like '48Z%' and gfnm.membership_status = 'gold' 
+
+
+/* After the next script, we uncover our mastermind behind the murder, 
+who is none other than 'Miranda Priestly'. */
+
+SELECT
+  p1.name                     as Name
+  ,p1.id                      as ID_num
+  ,inc.ssn                    as SSN
+  ,dl.hair_color              as Hair_clr
+  ,dl.height                  as Height 
+  ,dl.car_make                as Car_make
+  ,dl.car_model               as Car_model
+  ,fec.date                   as Date
+  ,fec.event_name             as Event
+  ,COUNT(fec.event_name)      as Visits
+FROM 
+ (
+ SELECT *
+ FROM facebook_event_checkin
+ WHERE event_name = 'SQL Symphony Concert'
+ AND date BETWEEN '20171201' AND '20171231'
+ ) fec
+JOIN person p1    ON p1.id = fec.person_id
+JOIN income inc   ON p1.ssn = inc.ssn
+JOIN 
+ (
+ SELECT *
+ FROM drivers_license
+ WHERE gender = 'female'
+ AND hair_color = 'red'
+ AND height BETWEEN 65 AND 67
+ AND car_make = 'Tesla'
+ AND car_model = 'Model S'
+ ) dl             ON p1.license_id = dl.id
+GROUP BY p1.name, p1.id, inc.ssn, dl.hair_color, 
+ dl.height, dl.car_make, dl.car_model,fec.event_name
+HAVING COUNT(fec.event_name) = 3
+
+
+
+
+
